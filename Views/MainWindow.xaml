@@ -1,0 +1,514 @@
+﻿<Window x:Class="ApartmentPlans.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:res="clr-namespace:ApartmentPlans.Resources"
+        xmlns:local="clr-namespace:ApartmentPlans" 
+        xmlns:auxiliary="clr-namespace:ApartmentPlans.AuxiliaryСlasses" xmlns:viewmodels="clr-namespace:ApartmentPlans.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:MainVm}"
+        mc:Ignorable="d"
+        Title="Плагин &quot;Планы квартир&quot;" Height="545" Width="680" Background="#FFE6E6E6">
+    <Window.Resources>
+        <auxiliary:ColumnWidthToComboBoxWidthConverter x:Key="ColumnWidthToComboBoxWidthConverter"/>
+        <auxiliary:WidthConverter x:Key="WidthConverter" />
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="201*"/>
+            <RowDefinition Height="35"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="325*"/>
+            <ColumnDefinition Width="325*"/>
+        </Grid.ColumnDefinitions>
+        <ListView ItemsSource="{Binding Views}" 
+                  Grid.Column="0" Margin="5,25,0,0" Grid.Row="0">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="303">
+                        <GridViewColumn.Header>
+                            <Grid>
+
+                                <TextBlock Text="{x:Static res:FileResources.Views}" 
+                                           Grid.ColumnSpan="2" 
+                                           HorizontalAlignment="Center"/>
+                            </Grid>
+                        </GridViewColumn.Header>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30" />
+                                        <ColumnDefinition Width="270" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox IsChecked="{Binding IsSelected}"
+                                              Grid.Column="0"/>
+                                    <TextBlock Text="{Binding View.Name}" 
+                                               Grid.Column="1"/>
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button Command="{Binding StartCommand}"
+                Grid.Column="1"
+                Grid.Row="1"
+                Content="{x:Static res:FileResources.Start}"
+                VerticalAlignment="Top"
+                Background="White" Margin="0,8,0,0" HorizontalAlignment="Center" Width="120"/>
+        <Label Content="{Binding SelectedItemsCount}" 
+               ContentStringFormat="Выбрано элементов: {0}" Margin="10,5,10,6" Grid.Row="1"/>
+        <TextBox Margin="5,4,0,0" TextWrapping="Wrap" 
+                 VerticalAlignment="Top" 
+                 Text="{x:Static res:FileResources.Search}"
+                 GotFocus="TextBox_GotFocus" 
+                 LostFocus="TextBox_LostFocus" TextChanged="TextBoxSearchViews_TextChanged"/>
+        <TabControl Grid.Column="1">
+            <TabItem Header="Основные">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <Grid Background="#FFE5E5E5">
+                        <Border Background="White" CornerRadius="5" Margin="6,4,8,0" Height="131" VerticalAlignment="Top"/>
+                        <Border Background="White" CornerRadius="5" Margin="6,140,8,0" Height="131" VerticalAlignment="Top"/>
+                        <Border Background="White" CornerRadius="5" Margin="6,277,8,6">
+                            <CheckBox Content="{x:Static res:FileResources.RotatePlans}" 
+                                  Margin="5,0,10,8"
+                                  IsChecked="{Binding IsRotatePlans}" Height="22" VerticalAlignment="Bottom"/>
+                        </Border>
+                        <TextBlock Text="{x:Static res:FileResources.RoomFilterParam}" Margin="10,28,0,0" 
+                            TextWrapping="Wrap" 
+                            Height="34"
+                            VerticalAlignment="Top" HorizontalAlignment="Left" Width="160"/>
+                        <ComboBox Margin="180,28,20,0"
+                              x:Name="FilteredSortParameter"
+                              IsEditable="True"
+                              IsTextSearchEnabled="False"
+                              StaysOpenOnEdit="True"
+                              ItemsSource="{Binding FilteredSortParameters.View}"
+                              DisplayMemberPath="Name"
+                              Text="{Binding FilterSortText, UpdateSourceTrigger=PropertyChanged}"
+                              SelectedItem="{Binding SelectedSortParameter, Mode=TwoWay}"
+                              LostFocus="SortParameterComboBox_LostFocus"
+                              SelectionChanged="SortParameterComboBox_SelectionChanged"
+                              GotFocus="ComboBox_GotFocus"
+                              Height="22"
+                              VerticalAlignment="Top"
+                              HorizontalAlignment="Stretch"
+                              MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                        <TextBlock Text="{x:Static res:FileResources.RoomValueFilterParam}" Margin="10,65,0,0" 
+                            TextWrapping="Wrap" Height="34" 
+                            VerticalAlignment="Top"
+                            Width="160" HorizontalAlignment="Left"/>
+                        <ComboBox Margin="180,65,20,0"
+                            IsEditable="True"
+                            IsTextSearchEnabled="False" 
+                            StaysOpenOnEdit="True"
+                            ItemsSource="{Binding FilteredValueSortParameters.View}"
+                            Text="{Binding FilterValueSortText, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedValueSortParameter, Mode=TwoWay}"
+                            LostFocus="ValueSortParameterComboBox_LostFocus"
+                            GotFocus="ComboBox_GotFocus" Height="22" VerticalAlignment="Top"
+                                  MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}" />
+                        <TextBlock Text="{x:Static res:FileResources.NumApartParam}" Margin="10,104,0,0" 
+                            TextWrapping="Wrap" Height="34" 
+                            VerticalAlignment="Top"
+                                   Width="180" HorizontalAlignment="Left"/>
+                        <ComboBox Margin="180,104,20,0"
+                            IsEditable="True"
+                            IsTextSearchEnabled="False" 
+                            StaysOpenOnEdit="True"
+                            ItemsSource="{Binding FilteredNumApartParameters.View}"
+                            DisplayMemberPath="Name"
+                            Text="{Binding FilterNumApartText, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedNumApartParameter, Mode=TwoWay}"
+                            LostFocus="NumApartParameterComboBox_LostFocus"
+                              GotFocus="ComboBox_GotFocus" Height="22" VerticalAlignment="Top"
+                                  MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                        <TextBlock Text="{x:Static res:FileResources.DoorTypes}" Margin="10,220,0,0" 
+                            TextWrapping="Wrap" Height="22" 
+                            VerticalAlignment="Top" HorizontalAlignment="Left" Width="180"
+                                />
+                        <ComboBox x:Name="doorTypeComboBox" Margin="180,218,20,0"
+                            LostFocus="TypesComboBox_LostFocus"
+                            ItemsSource="{Binding DoorTypes}" Height="22" VerticalAlignment="Top">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                            Content="{Binding Name}"
+                                            Checked="CheckBoxDoor_Checked"
+                                            Unchecked="CheckBoxDoor_Checked"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBlock Text="{x:Static res:FileResources.WallTypes}" Margin="10,186,0,0" 
+                            TextWrapping="Wrap" Height="35" 
+                            VerticalAlignment="Top" HorizontalAlignment="Left" Width="191"/>
+                        <ComboBox x:Name="wallTypeComboBox" Margin="180,186,20,0" Height="22" 
+                            VerticalAlignment="Top"
+                            LostFocus="TypesComboBox_LostFocus"
+                            ItemsSource="{Binding WallTypes}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                            Content="{Binding Name}"
+                                            Checked="CheckBoxWall_Checked"
+                                            Unchecked="CheckBoxWall_Checked"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Label Content="{Binding LabelWallCountText}" 
+                            Background="Transparent"
+                            Margin="180,184,49,231"
+                            MouseLeftButtonDown="LabelWallCount_MouseLeftButtonDown"/>
+                        <ComboBox Margin="180,151,20,0"
+                            IsEditable="True"
+                            IsTextSearchEnabled="False" 
+                            StaysOpenOnEdit="True"
+                            ItemsSource="{Binding FilteredTypeApartmentParameters.View}"
+                            DisplayMemberPath="Name"
+                            Text="{Binding FilterTypeApartmentText, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedTypeApartmentParameter, Mode=TwoWay}"
+                            LostFocus="TypeApartmentParameterComboBox_LostFocus"
+                              GotFocus="ComboBox_GotFocus" Height="22" VerticalAlignment="Top"
+                                  MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                        <TextBlock Text="{x:Static res:FileResources.TypeApartParam}" 
+                            Margin="10,151,0,0" TextWrapping="Wrap" 
+                            RenderTransformOrigin="0.525,1.56" 
+                            Height="28"  VerticalAlignment="Top" HorizontalAlignment="Left" Width="177"/>
+                        <TextBlock Margin="10,288,163,112" TextWrapping="Wrap" 
+                            RenderTransformOrigin="0.525,1.56" Text="{x:Static res:FileResources.SelectTemplate}"/>
+                        <ListBox ItemsSource="{Binding TemplateList}" Margin="10,315,14,53">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="240"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox IsChecked="{Binding IsChecked}" Grid.Column="0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+
+                            <!-- Привязка IsEnabled для самого ListBoxItem -->
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+
+
+                        <TextBlock Margin="0,4,0,0" TextWrapping="Wrap" 
+                            Text="Настройки" 
+                            HorizontalAlignment="Center" 
+                            Height="15" VerticalAlignment="Top" />
+                        <Label Content="{Binding LabelDoorCountText}" 
+                            Background="Transparent"
+                            Margin="180,216,49,199"
+                            MouseLeftButtonDown="LabelDoorCount_MouseLeftButtonDown"/>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Дополнительные">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <Grid Background="#FFE5E5E5">
+                        <Border Background="White" CornerRadius="5" Margin="6,4,8,0" Height="131" VerticalAlignment="Top"/>
+                        <Border Background="White" CornerRadius="5" Margin="6,140,8,0" Height="84" VerticalAlignment="Top"/>
+                        <TextBlock Margin="0,4,0,0" TextWrapping="Wrap" 
+                        Text="Настройки" 
+                        HorizontalAlignment="Center" 
+                        Height="15" VerticalAlignment="Top"/>
+                        <TextBlock Text="{x:Static res:FileResources.TypeLegend}" Margin="10,31,0,0" 
+                        TextWrapping="Wrap" 
+                        Height="21"
+                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="167"/>
+                        <ComboBox Margin="180,28,20,0" Height="22" VerticalAlignment="Top"
+                        IsEditable="True"
+                        IsTextSearchEnabled="False" 
+                        StaysOpenOnEdit="True"
+                        DisplayMemberPath="Name"
+                        ItemsSource="{Binding FilteredTypesLegend.View}"
+                        Text="{Binding FilterTypesLegendText, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedItem="{Binding SelectedTypeLegend, Mode=TwoWay}"
+                        LostFocus="TypesLegendComboBox_LostFocus"
+                        GotFocus="ComboBox_GotFocus"
+                        MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                        <TextBlock Text="{x:Static res:FileResources.ColumnParameter}" Margin="10,85,0,0" 
+                        TextWrapping="Wrap" Height="59" 
+                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="177"/>
+                        <ComboBox Margin="180,104,20,0" Height="21.96" VerticalAlignment="Top"
+                        IsEditable="True"
+                        IsTextSearchEnabled="False" 
+                        StaysOpenOnEdit="True"
+                        DisplayMemberPath="Definition.Name"
+                        ItemsSource="{Binding FilteredСolumnParameters.View}"
+                        Text="{Binding FilterСolumnText, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedItem="{Binding SelectedСolumnParameter, Mode=TwoWay}"
+                        LostFocus="СolumnParameterComboBox_LostFocus"
+                        GotFocus="ComboBox_GotFocus"
+                        MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                        <TextBlock Text="{x:Static res:FileResources.TypeSquare}" Margin="10,61,0,0" 
+                        TextWrapping="Wrap" Height="20" 
+                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="161"/>
+                        <ComboBox Margin="180,65,20,0" Height="21.96" VerticalAlignment="Top"
+                        IsEditable="True"
+                        IsTextSearchEnabled="False" 
+                        StaysOpenOnEdit="True"
+                        ItemsSource="{Binding FilteredTypesSquare.View}"
+                        DisplayMemberPath="Name"
+                        Text="{Binding FilterTypesSquareText, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedItem="{Binding SelectedTypeSquare, Mode=TwoWay}"
+                        LostFocus="TypesSquareComboBox_LostFocus"
+                        GotFocus="ComboBox_GotFocus"
+                        MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                        <ComboBox 
+                     x:Name="wallFacadesTypeComboBox"   
+                     Margin="180,151,20,0" Height="22" 
+                     VerticalAlignment="Top"
+                     LostFocus="TypesComboBox_LostFocus"
+                     ItemsSource="{Binding WallFacadesTypes}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                        Content="{Binding Name}"
+                                        Checked="CheckBoxWallFacades_Checked"
+                                        Unchecked="CheckBoxWallFacades_Checked"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBlock Text="{x:Static res:FileResources.WallFacadesTypes}" 
+                        Margin="10,151,0,0" TextWrapping="Wrap" 
+                        RenderTransformOrigin="0.525,1.56" 
+                        Height="28" VerticalAlignment="Top" HorizontalAlignment="Left" Width="177"/>
+                        <Label Content="{Binding LabelWallFacadesCountText}" 
+                        Background="Transparent" 
+                        HorizontalAlignment="Left"
+                        Margin="180,149,0,0" VerticalAlignment="Top" 
+                        Width="105" Height="24"
+                        MouseLeftButtonDown="LabelWallFacadesCount_MouseLeftButtonDown"/>
+                        <TextBlock Text="{x:Static res:FileResources.WallFacadesOffest}" Margin="10,186,0,0" 
+                        TextWrapping="Wrap" Height="22" 
+                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="191"/>
+                        <TextBox Margin="180,186,20,0" Height="22"
+                        Text="{Binding WallFacadesOffest}"
+                        VerticalAlignment="Top" PreviewTextInput="TextBox_PreviewTextInput"
+                        PreviewKeyDown="TextBox_PreviewKeyDown"/>
+                        <Border Background="White" CornerRadius="5" Margin="6,229,8,3"/>
+                        <ListView ItemsSource="{Binding ItemsMark}" Margin="10,268,10,6">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Марка" Width="120">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Комната" Width="160" x:Name="RoomColumn">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Label Content="{Binding HaveValueChecked}"/>
+                                                    <ComboBox
+                                Width="{Binding ElementName=RoomColumn, Path=ActualWidth, Converter={StaticResource ColumnWidthToComboBoxWidthConverter}, ConverterParameter=40}"
+                                IsEditable="True"
+                                IsTextSearchEnabled="False"
+                                StaysOpenOnEdit="True"
+                                ItemsSource="{Binding FilteredObjectParameters.View}"
+                                Text="{Binding FilterObjectText, UpdateSourceTrigger=PropertyChanged}"
+                                LostFocus="SortParameterComboBox_LostFocus"
+                                GotFocus="ComboBox_GotFocus">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <CheckBox Content="{Binding Name}"
+                                                  IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                                  PreviewMouseDown="CheckBox_PreviewMouseDown"/>
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                        <TextBlock Text="{x:Static res:FileResources.MarksRatio}" Margin="10,239,49,0" 
+                        TextWrapping="Wrap" Height="22" 
+                        VerticalAlignment="Top"/>
+
+
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Выгрузка">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <Grid Background="#FFE5E5E5">
+                        <Border Background="White" CornerRadius="5" Margin="6,5,8,4"/>
+                        <CheckBox Content="{x:Static res:FileResources.DownloadSVG}"
+                    IsChecked="{Binding IsExport}" 
+                    Margin="12,16,134,0" Height="15" 
+                    VerticalAlignment="Top" 
+                    Checked="CheckBoxExport_Checked"
+                    Unchecked="CheckBoxExport_Checked"/>
+                        <Grid IsEnabled="{Binding IsExport}">
+                            <ComboBox Margin="174,50,20,0" Height="22" VerticalAlignment="Top"
+                            IsEditable="True"
+                            IsTextSearchEnabled="False" 
+                            StaysOpenOnEdit="True"
+                            ItemsSource="{Binding FilteredNameProjectParameters.View}"
+                            DisplayMemberPath="Name"
+                            Text="{Binding FilterNameProjectText, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedNameProjectParameter, Mode=TwoWay}"
+                                  GotFocus="ComboBox_GotFocus"
+                                  MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                            <TextBlock x:Name="NameProject"
+                        Foreground="LightGray"
+                        Text="{x:Static res:FileResources.NameProject}" 
+                        Margin="10,53,0,0" 
+                        TextWrapping="Wrap" 
+                        Height="16" 
+                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="161"/>
+                            <TextBlock x:Name="NameCase"
+                            Foreground="LightGray"
+                            Margin="10,88,0,0" 
+                            TextWrapping="Wrap" 
+                            Height="16" 
+                            VerticalAlignment="Top"
+                            Text="{x:Static res:FileResources.NameCase}" HorizontalAlignment="Left" Width="161"/>
+                            <TextBlock x:Name="NameSection"
+                            Foreground="LightGray"
+                            Margin="10,124,0,0" 
+                            TextWrapping="Wrap"
+                            Height="18" 
+                            VerticalAlignment="Top" 
+                            Text="{x:Static res:FileResources.NameSection}" HorizontalAlignment="Left" Width="161"/>
+                            <TextBlock x:Name="NameFloor"
+                            Foreground="LightGray"
+                            Margin="10,164,0,0" 
+                            TextWrapping="Wrap" 
+                            Height="18" 
+                            VerticalAlignment="Top"
+                            Text="{x:Static res:FileResources.NameFloor}" HorizontalAlignment="Left" Width="137"/>
+                            <TextBlock x:Name="PathToSave"
+                        Foreground="LightGray"
+                        Text="{x:Static res:FileResources.PathToSave}" 
+                        Margin="10,201,0,0" 
+                        TextWrapping="Wrap" 
+                        Height="16" 
+                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="161"/>
+                            <TextBlock x:Name="Path"
+                        Foreground="LightGray"
+                        Text="{Binding PathToSave}" 
+                        Margin="10,235,22,0" 
+                        TextWrapping="Wrap" 
+                        Height="44" 
+                        VerticalAlignment="Top"/>
+                            <ComboBox Margin="174,86,20,0" Height="22" VerticalAlignment="Top"
+                            IsEditable="True"
+                            IsTextSearchEnabled="False" 
+                            StaysOpenOnEdit="True"
+                            ItemsSource="{Binding FilteredNamesCaseParameters.View}"
+                            DisplayMemberPath="Name"
+                            Text="{Binding FilterNamesCaseText, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedNameCaseParameter, Mode=TwoWay}"
+                            LostFocus="NamesCaseParameterComboBox_LostFocus"
+                                  GotFocus="ComboBox_GotFocus"
+                             MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                            <ComboBox Margin="174,123,20,0" Height="22" VerticalAlignment="Top"
+                            IsEditable="True"
+                            IsTextSearchEnabled="False" 
+                            StaysOpenOnEdit="True"
+                            DisplayMemberPath="Name"
+                            ItemsSource="{Binding FilteredNamesSectionParameters.View}"
+                            Text="{Binding FilterNamesSectionText, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedNameSectionParameter, Mode=TwoWay}"
+                            LostFocus="NamesSectionParameterComboBox_LostFocus"
+                                  GotFocus="ComboBox_GotFocus"
+                             MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                            <ComboBox Margin="174,162,20,0" Height="22" VerticalAlignment="Top"
+                            IsEditable="True"
+                            IsTextSearchEnabled="False" 
+                            StaysOpenOnEdit="True"
+                            ItemsSource="{Binding FilteredNamesFloorParameters.View}"
+                            DisplayMemberPath="Name"
+                            Text="{Binding FilterNamesFloorText, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedNameFloorParameter, Mode=TwoWay}"
+                            LostFocus="NamesFloorParameterComboBox_LostFocus"
+                                  GotFocus="ComboBox_GotFocus"
+                            MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
+                            <Button 
+                                Content="{x:Static res:FileResources.Choose}" 
+                                Margin="174,198,20,0" 
+                                VerticalAlignment="Top"
+                                Command="{Binding СhoosePathToSaveCommand}"/>
+                            <ListView ItemsSource="{Binding ItemsSchedule}" Margin="10,279,10,15">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Колонка" Width="120">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Name}"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Параметр" Width="160" x:Name="ParameterColumn">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <ComboBox
+                            Width="{Binding ElementName=ParameterColumn, Path=ActualWidth, Converter={StaticResource ColumnWidthToComboBoxWidthConverter}, ConverterParameter=13}"
+                            IsEditable="True"
+                            IsTextSearchEnabled="False"
+                            StaysOpenOnEdit="True"
+                            ItemsSource="{Binding FilteredObjectParameters.View}"
+                            DisplayMemberPath="Name"
+                            Text="{Binding FilterObjectText, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedItem="{Binding SelectedObjectParameter, Mode=TwoWay}"
+                            LostFocus="SortParameterComboBox_LostFocus"
+                            GotFocus="ComboBox_GotFocus"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </Grid>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Пресет">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <Grid Background="#FFE5E5E5">
+                        <Border Background="White" CornerRadius="5" Margin="6,5,8,4"/>
+                        <Button Margin="180,28,20,0" 
+                            Height="22" 
+                            VerticalAlignment="Top"
+                            Content="{x:Static res:FileResources.UploadSettings}"
+                            Command="{Binding UploadSettingsCommand}"/>
+                        <Button Margin="180,65,20,0"
+                            Content="{x:Static res:FileResources.SaveSettings}"
+                            Command="{Binding SaveSettingsCommand}" Height="22" VerticalAlignment="Top"/>
+                        <TextBlock Text="{x:Static res:FileResources.UploadSettingsLabel}" 
+                               Margin="10,28,0,0" 
+                        TextWrapping="Wrap" 
+                        Height="34" 
+                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="156"/>
+                        <TextBlock Text="{x:Static res:FileResources.SaveSettingsLabel}" Margin="10,65,0,0" 
+                        TextWrapping="Wrap" Height="34" 
+                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="161"/>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
