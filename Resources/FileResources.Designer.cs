@@ -61,6 +61,24 @@ namespace ApartmentPlans.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Автоматически просчитать объём фасада.
+        /// </summary>
+        public static string AutoFacade {
+            get {
+                return ResourceManager.GetString("AutoFacade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Автоматически просчитать объём колонн.
+        /// </summary>
+        public static string AutoСolumns {
+            get {
+                return ResourceManager.GetString("AutoСolumns", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Выбрать.
         /// </summary>
         public static string Choose {
@@ -70,7 +88,25 @@ namespace ApartmentPlans.Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Параметр подсчёта объёма колон (пример: длина или ширина).
+        ///   Ищет локализованную строку, похожую на Выбрать связь фасада.
+        /// </summary>
+        public static string ChooseFacades {
+            get {
+                return ResourceManager.GetString("ChooseFacades", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Цвет заливки квартиры на плане.
+        /// </summary>
+        public static string ColorFill {
+            get {
+                return ResourceManager.GetString("ColorFill", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Параметр подсчёта объёма колон (длина или ширина).
         /// </summary>
         public static string ColumnParameter {
             get {
@@ -151,6 +187,24 @@ namespace ApartmentPlans.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Отступ изображения от границ svg в px.
+        /// </summary>
+        public static string OffsetLink {
+            get {
+                return ResourceManager.GetString("OffsetLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Длина большей стороны в px.
+        /// </summary>
+        public static string OffsetLinkAdvance {
+            get {
+                return ResourceManager.GetString("OffsetLinkAdvance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Путь сохранения файлов.
         /// </summary>
         public static string PathToSave {
@@ -178,7 +232,7 @@ namespace ApartmentPlans.Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Поворот квартир (высокое потребление ОЗУ).
+        ///   Ищет локализованную строку, похожую на Поворот планов(высокое потребление ОЗУ).
         /// </summary>
         public static string RotatePlans {
             get {
@@ -309,6 +363,15 @@ namespace ApartmentPlans.Resources {
         public static string WallTypes {
             get {
                 return ResourceManager.GetString("WallTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Обрезать лишние границы .
+        /// </summary>
+        public static string СuttingBound {
+            get {
+                return ResourceManager.GetString("СuttingBound", resourceCulture);
             }
         }
     }

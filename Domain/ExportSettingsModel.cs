@@ -14,5 +14,8 @@ namespace ApartmentPlans.Domain
         public View ExportView { get; set; }
         public View ExportViewSheet { get; set; }
         public string AdditionalWord { get; set; }
+        public int OffsetLink { get; set; }
+        public int OffsetLinkAdvance { get; set; }
+        public bool IsСuttingBound { get; set; }    
     }
 }

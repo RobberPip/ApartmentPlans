@@ -1,8 +1,10 @@
-﻿using ApartmentPlans.ViewModels;
+﻿using ApartmentPlans.Domain;
+using ApartmentPlans.ViewModels;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,9 +21,20 @@ namespace ApartmentPlans
     /// </summary>
     public partial class ExportModuleWindow : Window
     {
+        private void ComboBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var comboBox = sender as ComboBox;
+            comboBox.SelectedIndex = -1;
+        }
         private MainVm mainVM;
         public ExportModuleWindow(UIApplication application)
         {
+            var executingAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var directory = System.IO.Path.GetDirectoryName(executingAssembly.Location);
+            var dllPath = System.IO.Path.Combine(directory, "ColorPicker.dll");
+            var dllPath1 = System.IO.Path.Combine(directory, "Microsoft.Xaml.Behaviors.dll");
+            Assembly.LoadFrom(dllPath);
+            Assembly.LoadFrom(dllPath1);
             InitializeComponent();
             mainVM = new MainVm(application);
             DataContext = mainVM;
@@ -46,7 +59,7 @@ namespace ApartmentPlans
         {
             var comboBox = sender as ComboBox;
             var text = comboBox.Text;
-            if (!mainVM.SortParameters.Select(q => q.Name).Contains(text))
+            if (!mainVM.ItemsSchedule.Any(q => q.ObjectParameters.Any(w => w.Name == text)))
             {
                 comboBox.Text = string.Empty;
             }
@@ -106,6 +119,53 @@ namespace ApartmentPlans
                 comboBox.IsDropDownOpen = true;
             }
         }
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            for (int i = 0; i < e.AddedItems.Count; i++)
+            {
 
+                var view = e.AddedItems[i] as WorkViewModel;
+                if (view != null)
+                {
+                    // Переключаем IsSelected
+                    view.IsSelected = !view.IsSelected;
+                }
+            }
+        }
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            foreach (var view in mainVM.ViewsSheet)
+            {
+                view.IsSelected = true;
+            }
+        }
+        private void CheckBox_UnChecked(object sender, RoutedEventArgs e)
+        {
+            foreach (var view in mainVM.ViewsSheet)
+            {
+                view.IsSelected = false;
+            }
+        }
+        private void TextBoxOffset_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (e.Text == "-")
+            {
+                // Блокируем минус, если он не первый символ или уже есть в тексте
+                e.Handled = ((sender as TextBox).Text.Contains("-") || (sender as TextBox).CaretIndex != 0);
+            }
+            else
+            {
+                // Блокируем всё, кроме цифр
+                e.Handled = !int.TryParse(e.Text, out _);
+            }
+        }
+        private void TextBoxOffset_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Блокируем нажатие клавиши пробела
+            if (e.Key == Key.Space)
+            {
+                e.Handled = true;
+            }
+        }
     }
 }

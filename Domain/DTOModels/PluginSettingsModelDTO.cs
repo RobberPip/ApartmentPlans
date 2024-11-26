@@ -35,11 +35,15 @@ namespace ApartmentPlans.Domain
         [JsonInclude]
         public List<SelectableFamilyModel> DoorTypesDTO { get => DoorTypes; set => DoorTypes = value; }
         [JsonInclude]
+        public List<SelectableFamilyModel> LinkTypesDTO { get => LinkTypes; set => LinkTypes = value; }
+        [JsonInclude]
         public List<SelectableFamilyModel> WallFacadesTypesDTO { get => WallFacadesTypes; set => WallFacadesTypes = value; }
         [JsonInclude]
         public bool IsExportDTO { get=>IsExport; set => IsExport = value; } 
         [JsonInclude]
         public bool IsRotatePlansDTO { get=>IsRotatePlans; set => IsRotatePlans = value; }
+        [JsonInclude]
+        public bool IsRotateFloorsDTO { get => IsRotateFloors; set => IsRotateFloors = value; }
         [JsonInclude]
         public List<MultiSelectModel> ActiveTemplatesDTO { get => ActiveTemplates; set => ActiveTemplates = value; }
         [JsonInclude]
@@ -63,5 +67,16 @@ namespace ApartmentPlans.Domain
         public List<RatioObjectModel<SelectableParameterModel>> ItemsScheduleDTO { get => ItemsSchedule; set => ItemsSchedule = value; }
         [JsonInclude]
         public List<RatioObjectModel<MultiSelectModel>> ItemsMarkDTO { get => ItemsMark; set => ItemsMark = value; }
+        [JsonInclude]
+        public bool AutoСolumnsDTO { get => AutoСolumns; set => AutoСolumns = value; }
+        [JsonInclude]
+        public bool AutoFacadeDTO { get => AutoFacade; set => AutoFacade = value; }
+        [JsonInclude]
+        public System.Windows.Media.Color ColorFillDTO
+        {
+            get => ColorFill;
+            set => ColorFill = value;
+        }
+
     }
 }

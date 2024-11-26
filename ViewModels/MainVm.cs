@@ -18,6 +18,8 @@ namespace ApartmentPlans.ViewModels
     {
         public MainVm(UIApplication application)
         {
+            
+
             uiApp = application;
             uidoc = uiApp.ActiveUIDocument;
             app = uiApp.Application;
@@ -77,6 +79,10 @@ namespace ApartmentPlans.ViewModels
             .OfClass(typeof(WallType))
             .Cast<WallType>();
 
+            var linkCollector = new FilteredElementCollector(doc)
+            .OfClass(typeof(RevitLinkType))
+            .Cast<RevitLinkType>();
+
             var columnTypeCollector = new FilteredElementCollector(doc)
             .OfClass(typeof(FamilySymbol))
             .OfCategory(BuiltInCategory.OST_StructuralColumns)
@@ -96,26 +102,45 @@ namespace ApartmentPlans.ViewModels
             var room = roomCollector.FirstOrDefault();
             var allParameters = GetAllGeneralParameters(room);
             var listParams = new ObservableCollection<SelectableParameterModel>(GetSelectableParametersWithUniqueNames(allParameters));
-            
+            var UniqueParameters = new ObservableCollection<SelectableParameterModel>(listParams);
+
+            // Создаем новый параметр
+            var newParameter = new SelectableParameterModel { Name = "Адрес проекта" };
+
+            // Добавляем новый параметр, если его еще нет в списке
+            if (UniqueParameters.FirstOrDefault(param => param.Name == newParameter.Name) == null)
+            {
+                UniqueParameters.Add(newParameter);
+            }
+
             ItemsSchedule = new ObservableCollection<RatioObjectModel<SelectableParameterModel>>
             {
+                new RatioObjectModel<SelectableParameterModel> { Name = "Строительный адрес", ObjectParameters = UniqueParameters },
+                new RatioObjectModel<SelectableParameterModel> { Name = "Тип объекта", ObjectParameters = listParams },
+                new RatioObjectModel<SelectableParameterModel> { Name = "Номер корпуса (дома)", ObjectParameters = listParams },
+                new RatioObjectModel<SelectableParameterModel> { Name = "Номер п/п секции (размещения)", ObjectParameters = listParams },
+                new RatioObjectModel<SelectableParameterModel> { Name = "Этаж (ряд)", ObjectParameters = listParams },
+                new RatioObjectModel<SelectableParameterModel> { Name = "Комнат", ObjectParameters = listParams },
                 new RatioObjectModel<SelectableParameterModel> { Name = "Условный номер", ObjectParameters = listParams },
-                new RatioObjectModel<SelectableParameterModel> { Name = "Назначение", ObjectParameters = listParams },
-                new RatioObjectModel<SelectableParameterModel> { Name = "Этаж расположения", ObjectParameters = listParams },
-                new RatioObjectModel<SelectableParameterModel> { Name = "Номер корпуса", ObjectParameters = listParams },
-                new RatioObjectModel<SelectableParameterModel> { Name = "Номер секции", ObjectParameters = listParams },
-                new RatioObjectModel<SelectableParameterModel> { Name = "Общая площадь, м2", ObjectParameters = listParams },
-                new RatioObjectModel<SelectableParameterModel> { Name = "Количество комнат", ObjectParameters = listParams },
-                new RatioObjectModel<SelectableParameterModel> { Name = "Общая жилая площадь, м2", ObjectParameters = listParams },
-                new RatioObjectModel<SelectableParameterModel> { Name = "Высота потолков", ObjectParameters = listParams },
-                new RatioObjectModel<SelectableParameterModel> { Name = "Название ЖК", ObjectParameters = listParams }
+                new RatioObjectModel<SelectableParameterModel> { Name = "Площадь по проекту (без летних)", ObjectParameters = listParams },
+                new RatioObjectModel<SelectableParameterModel> { Name = "Площадь по проекту общая (расчетная)", ObjectParameters = listParams },
+                new RatioObjectModel<SelectableParameterModel> { Name = "Площадь по проекту жилая", ObjectParameters = listParams },
+                new RatioObjectModel<SelectableParameterModel> { Name = "Высота потолков", ObjectParameters = listParams }
             };
+
             var distinctRoomNames = roomCollector.Select(q => q.get_Parameter(BuiltInParameter.ROOM_NAME).AsValueString())
                 .Distinct()
                 .ToList();
-            ItemsMark = new ObservableCollection<RatioObjectModel<MultiSelectModel>>
+            var marksInProject = new FilteredElementCollector(doc)
+               .OfCategory(BuiltInCategory.OST_GenericAnnotation)
+               .OfClass(typeof(FamilySymbol))
+               .Cast<FamilySymbol>()
+               .Where(x => x is AnnotationSymbolType)
+               .Cast<AnnotationSymbolType>()
+               .ToList();
+            var ItemsMarkTemp = new ObservableCollection<RatioObjectModel<MultiSelectModel>>
             {
-                new RatioObjectModel<MultiSelectModel> { Name = ValidNamesResources.MarkBathRoom },
+                new RatioObjectModel<MultiSelectModel> { Name = ValidNamesResources.MarkBathRoom},
                 new RatioObjectModel<MultiSelectModel> { Name = ValidNamesResources.MarkBedRoom},
                 new RatioObjectModel<MultiSelectModel> { Name = ValidNamesResources.MarkChildishRoom},
                 new RatioObjectModel<MultiSelectModel> { Name = ValidNamesResources.MarkDressingRoom },
@@ -129,7 +154,22 @@ namespace ApartmentPlans.ViewModels
                 new RatioObjectModel<MultiSelectModel> { Name = ValidNamesResources.MarkStoreRoom },
                 new RatioObjectModel<MultiSelectModel> { Name = ValidNamesResources.MarkTerraceRoom }
             };
+            var markNamesSet = new HashSet<string>(marksInProject.Select(m => m.Name));
+            ItemsMark = new ObservableCollection<RatioObjectModel<MultiSelectModel>>(
+                ItemsMarkTemp.Where(item => markNamesSet.Any(markName => item.Name.Contains(markName)))
+            );
 
+            // Предварительно создаем коллекцию уникальных имен комнат
+            var roomModels = distinctRoomNames.Select(name => new MultiSelectModel { Name = name }).ToList();
+
+            // Добавляем каждый объект roomModels к ObjectParameters каждого элемента в ItemsMark
+            foreach (var itemMark in ItemsMark)
+            {
+                foreach (var roomName in distinctRoomNames)
+                {
+                    itemMark.ObjectParameters.Add(new MultiSelectModel() { Name = roomName });
+                }
+            }
             SortParameters = listParams;
             NameProjectParameters = listParams;
             NamesCaseParameters = listParams;
@@ -147,6 +187,8 @@ namespace ApartmentPlans.ViewModels
             wallTypeCollector.Select(symbol => new SelectableFamilyModel { element = symbol }));
             WallFacadesTypes = new ObservableCollection<SelectableFamilyModel>(
             wallTypeCollector.Select(symbol => new SelectableFamilyModel { element = symbol }));
+            FilesFacde = new ObservableCollection<SelectableFamilyModel>(
+            linkCollector.Select(symbol => new SelectableFamilyModel { element = symbol }));
             IEnumerable<ViewPlan> templates = new FilteredElementCollector(doc)
                 .OfClass(typeof(ViewPlan))
                 .Cast<ViewPlan>()
@@ -225,7 +267,23 @@ namespace ApartmentPlans.ViewModels
         {
             CommandPlans command = new CommandPlans(uiApp);
             PluginSettingsModel settings = CreatePluginSettingsModel();
-            command.CreatePlanApartment(new List<WorkViewModel>(Views.Where(q => q.IsSelected)), settings);
+            bool hasDuplicates = settings.ItemsSchedule
+            .GroupBy(x => x.SelectedObjectParameter)
+            .Any(g => g.Count() > 1);
+
+            if (hasDuplicates)
+            {
+                // Если есть дубликаты, выходим из метода
+                MessageBox.Show("Параметры в спецификации потвторяются!");
+                return; 
+            }
+            var views = new List<WorkViewModel>(Views.Where(q => q.IsSelected));
+            var selectedTempViews = _tempViews.Where(q => q.IsSelected);
+
+            views = views.Union(selectedTempViews).ToList();
+            command.CreatePlanApartment(views, settings);
+            
+
         }
         private PluginSettingsModel CreatePluginSettingsModel()
         {
@@ -248,22 +306,30 @@ namespace ApartmentPlans.ViewModels
                 NumApartParameter = SelectedNumApartParameter?.parameter ?? null,
                 WallTypes = WallTypes != null ? new List<SelectableFamilyModel>(WallTypes.Where(q => q.IsSelected == true)) : new List<SelectableFamilyModel>(),
                 DoorTypes = DoorTypes != null ? new List<SelectableFamilyModel>(DoorTypes.Where(q => q.IsSelected == true)) : new List<SelectableFamilyModel>(),
+                LinkTypes = FilesFacde != null ? new List<SelectableFamilyModel>(FilesFacde.Where(q => q.IsSelected == true)) : new List<SelectableFamilyModel>(),
                 WallFacadesTypes = WallFacadesTypes != null ? new List<SelectableFamilyModel>(WallFacadesTypes.Where(q => q.IsSelected == true)) : new List<SelectableFamilyModel>(),
                 ActiveTemplates = TemplateList != null ? new List<MultiSelectModel>(TemplateList.Where(q => q.IsChecked == true)) : new List<MultiSelectModel>(),
                 IsExport = IsExport,
+                AutoFacade = AutoFacade,
+                AutoСolumns = AutoСolumns,
                 IsRotatePlans = IsRotatePlans,
+                IsRotateFloors = IsRotateFloors,
                 TypeLegend = SelectedTypeLegend ?? null,
                 ColumnParameter = SelectedСolumnParameter ?? null,
                 TypeApartment = SelectedTypeApartmentParameter?.parameter ?? null,
                 TypesSquareTag = SelectedTypeSquare ?? null,
+                ColorFill = SelectedColor,
                 WallFacadesOffest = int.TryParse(WallFacadesOffest, out var parsedWallFacadesOffest) ? parsedWallFacadesOffest : 0,
                 ExportSettings = new ExportSettingsModel()
                 {
+                    OffsetLink = OffsetLink,
+                    OffsetLinkAdvance = OffsetLinkAdvance,
                     NameCaseParameter = SelectedNameCaseParameter?.parameter ?? null,
                     NameFloorParameter = SelectedNameFloorParameter?.parameter ?? null,
                     NameSectionParameter = SelectedNameSectionParameter?.parameter ?? null,
                     NameProject = _nameProject ?? string.Empty,
                     PathToSave = !string.IsNullOrEmpty(correctedPath) ? correctedPath : _pathToSave ?? string.Empty,
+                    IsСuttingBound = IsСuttingBound,
                 }
             };
         }
@@ -283,6 +349,9 @@ namespace ApartmentPlans.ViewModels
                 new List<RatioObjectModel<SelectableParameterModel>>(),
                 ExportSettings = new ExportSettingsModel()
                 {
+                    IsСuttingBound = IsСuttingBound,
+                    OffsetLink = OffsetLink,
+                    OffsetLinkAdvance = OffsetLinkAdvance,
                     NameCaseParameter = SelectedNameCaseParameter?.parameter ?? null,
                     NameFloorParameter = SelectedNameFloorParameter?.parameter ?? null,
                     NameSectionParameter = SelectedNameSectionParameter?.parameter ?? null,
@@ -290,7 +359,13 @@ namespace ApartmentPlans.ViewModels
                     PathToSave = !string.IsNullOrEmpty(correctedPath) ? correctedPath : _pathToSave ?? string.Empty,
                 }
             };
-            CommandExport.ExportSheetModule(doc, new List<WorkViewModel>(ViewsSheet), settings);
+            var views = new List<WorkViewModel>(ViewsSheet.Where(q => q.IsSelected));
+            var selectedTempViews = _tempViewsSheet.Where(q => q.IsSelected);
+
+            views = views.Union(selectedTempViews).ToList();
+
+            CommandExport.ExportSheetModule(doc, views, settings);
+
         }
         public RelayCommand StartCommand
         {
@@ -301,13 +376,21 @@ namespace ApartmentPlans.ViewModels
                   {
                       _externalEventHandler.SetAction(StartAction);
                       _externalEvent.Raise();
+                      //StartAction();
+
+
                   },
 
                   canExecute: obj =>
                   {
                       bool parametersNotNull = new object[] { SelectedSortParameter, SelectedValueSortParameter, SelectedNumApartParameter }
                               .All(param => param != null);
-                      bool anyViewSelected = Views.Any(v => v.IsSelected);
+                      var views = new List<WorkViewModel>(Views.Where(q => q.IsSelected));
+                      foreach (var view in _tempViews.Where(q => q.IsSelected))
+                      {
+                          views.Add(view);
+                      }
+                      bool anyViewSelected = views.Any(v => v.IsSelected);
                       return parametersNotNull && anyViewSelected;
                   }));
             }
@@ -336,8 +419,9 @@ namespace ApartmentPlans.ViewModels
                   {
                       try
                       {
-                          _externalEventHandler.SetAction(ExportAction);
-                      _externalEvent.Raise();
+                           _externalEventHandler.SetAction(ExportAction);
+                           _externalEvent.Raise();
+                          //ExportAction();
                       }
                       catch
                       {
@@ -346,7 +430,12 @@ namespace ApartmentPlans.ViewModels
                   },
                   canExecute: obj =>
                   {
-                      bool anyViewSelected = ViewsSheet.Any(v => v.IsSelected);
+                      var views = new List<WorkViewModel>(ViewsSheet.Where(q => q.IsSelected));
+                      foreach (var view in _tempViewsSheet.Where(q => q.IsSelected))
+                      {
+                          views.Add(view);
+                      }
+                      bool anyViewSelected = views.Any(v => v.IsSelected);
                       return anyViewSelected;
                   }));
             }
@@ -425,13 +514,19 @@ namespace ApartmentPlans.ViewModels
             SelectedValueSortParameter = ValueSortParameters.FirstOrDefault(q => q == settingsDTO.ValueSortParameterDTO);
             SelectedNumApartParameter = NumApartParameters.FirstOrDefault(q => q.Name == settingsDTO.NumApartParameterDTO);
             WallTypes.Where(wallType => settingsDTO.WallTypesDTO.Any(dto => dto.Name == wallType.Name)).ToList().ForEach(wallType => wallType.IsSelected = true);
-            LabelWallCountText = "Выбарно: " + WallTypes.Count(q => q.IsSelected == true).ToString();
+            LabelWallCountText = "Выбрано: " + WallTypes.Count(q => q.IsSelected == true).ToString();
             DoorTypes.Where(doorType => settingsDTO.DoorTypesDTO.Any(dto => dto.Name == doorType.Name)).ToList().ForEach(doorType => doorType.IsSelected = true);
-            LabelDoorCountText = "Выбарно: " + DoorTypes.Count(q => q.IsSelected == true).ToString();
+            LabelDoorCountText = "Выбрано: " + DoorTypes.Count(q => q.IsSelected == true).ToString();
+            FilesFacde.Where(linkType => settingsDTO.LinkTypesDTO.Any(dto => dto.Name == linkType.Name)).ToList().ForEach(linkType => linkType.IsSelected = true);
+            LabelLinkCountText = "Выбрано: " + FilesFacde.Count(q => q.IsSelected == true).ToString();
             WallFacadesTypes.Where(q => settingsDTO.WallFacadesTypesDTO.Any(dto => dto.Name == q.Name)).ToList().ForEach(q => q.IsSelected = true);
-            LabelWallFacadesCountText = "Выбарно: " + WallFacadesTypes.Count(q => q.IsSelected == true).ToString();
+            LabelWallFacadesCountText = "Выбрано: " + WallFacadesTypes.Count(q => q.IsSelected == true).ToString();
+            SelectedColor = settingsDTO.ColorFillDTO;
             IsExport = settingsDTO.IsExportDTO;
+            AutoСolumns = settingsDTO.AutoСolumnsDTO;
+            AutoFacade = settingsDTO.AutoFacadeDTO;
             IsRotatePlans = settingsDTO.IsRotatePlansDTO;
+            IsRotateFloors = settingsDTO.IsRotateFloorsDTO;
             TemplateList.Where(q => settingsDTO.ActiveTemplatesDTO.Any(dto => dto.Name == q.Name&& q.IsEnabled==true)).ToList().ForEach(q => q.IsChecked = true);
             SelectedTypeLegend = TypesLegend.FirstOrDefault(q => q.Name == settingsDTO.TypeLegendDTO);
             SelectedTypeSquare = TypesSquare.FirstOrDefault(q => q.Name == settingsDTO.TypesSquareTagDTO);
@@ -451,28 +546,33 @@ namespace ApartmentPlans.ViewModels
                           .SelectedObjectParameter.Name));
             if (settingsDTO.ItemsMarkDTO.Count > 0)
             {
-                ItemsMark = new ObservableCollection<RatioObjectModel<MultiSelectModel>>(
-                  ItemsMark
-                      .Where(q => settingsDTO.ItemsMarkDTO.Any(dto => dto.Name == q.Name))
-                      .Select(item =>
-                      {
-                          var dto = settingsDTO.ItemsMarkDTO.FirstOrDefault(x => x.Name == item.Name);
-                          if (dto != null)
-                          {
-                              foreach (var parameter in item.ObjectParameters
-                                  .Where(p => dto.CheckedObjects.Any(w => w.Name == p.Name)))
-                              {
-                                  parameter.IsChecked = true;
-                                  item.HaveValueChecked = "✔️";
-                              }
-                          }
-                          return item;
-                      }).ToList());
+                
+                foreach (var item in ItemsMark)
+                {
+                    var dto = settingsDTO.ItemsMarkDTO.FirstOrDefault(x => x.Name == item.Name);
+                    if (dto != null)
+                    {
+                        foreach (var parameter in item.ObjectParameters)
+                        {
+                            if (dto.CheckedObjects.Any(w => w.Name == parameter.Name))
+                            {
+                                parameter.IsChecked = true;
+                                item.HaveValueChecked = "✔️";
+                            }
+                        }
+                    }
+                }
+
+
+
             }
             SelectedNameCaseParameter = NamesCaseParameters.FirstOrDefault(q => q.Name == settingsDTO.ExportSettingsDTO.NameCaseParameterDTO);
             SelectedNameSectionParameter = NamesSectionParameters.FirstOrDefault(q => q.Name == settingsDTO.ExportSettingsDTO.NameSectionParameterDTO);
             SelectedNameFloorParameter = NamesFloorParameters.FirstOrDefault(q => q.Name == settingsDTO.ExportSettingsDTO.NameFloorParameterDTO);
             PathToSave = settingsDTO.ExportSettingsDTO.PathToSaveDTO;
+            OffsetLink = settingsDTO.ExportSettingsDTO.OffsetLinkDTO;
+            OffsetLinkAdvance = settingsDTO.ExportSettingsDTO.OffsetLinkAdvanceDTO;
+            IsСuttingBound = settingsDTO.ExportSettingsDTO.IsСuttingBoundDTO;
             var _nameProject = NameProjectParameters.FirstOrDefault(q => q.Name == settingsDTO.ExportSettingsDTO.NameProjectDTO);
             if (_nameProject == null)
             {
@@ -493,6 +593,9 @@ namespace ApartmentPlans.ViewModels
             if (e.PropertyName == nameof(WorkViewModel.IsSelected))
             {
                 SelectedItemsCount = Views.Count(v => v.IsSelected);
+                if (SelectedItemsCount == 0) {
+                    SelectedItemsCount = ViewsSheet.Count(v => v.IsSelected);
+                }
             }
         }
         private void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)

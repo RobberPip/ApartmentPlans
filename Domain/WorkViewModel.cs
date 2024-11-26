@@ -22,6 +22,8 @@ namespace ApartmentPlans.Domain
             }
         }
         public View View { get; set; }
+        public IEnumerable<IGrouping<string, Element>> allRooms {  get; set; }
+        public List<FamilyInstance> doors { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged(string propertyName)

@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace ApartmentPlans.Domain
 {
@@ -13,6 +14,7 @@ namespace ApartmentPlans.Domain
         public List<SelectableFamilyModel> WallFacadesTypes { get; set; }
         public bool IsExport { get; set; }
         public bool IsRotatePlans { get; set; }
+        public bool IsRotateFloors { get; set; }
         public List<MultiSelectModel> ActiveTemplates { get; set; }
         public ExportSettingsModel ExportSettings { get; set; }
         public View TypeLegend { get; set; }
@@ -22,5 +24,9 @@ namespace ApartmentPlans.Domain
         public int WallFacadesOffest { get; set; }
         public List<RatioObjectModel<SelectableParameterModel>> ItemsSchedule { get; set; }
         public List<RatioObjectModel<MultiSelectModel>> ItemsMark { get; set; }
+        public bool AutoСolumns { get; set; }
+        public bool AutoFacade { get; set; }
+        public List<SelectableFamilyModel> LinkTypes { get; set; }
+        public System.Windows.Media.Color ColorFill {  get; set; }
     }
 }

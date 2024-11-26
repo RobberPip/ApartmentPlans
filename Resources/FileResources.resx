@@ -121,7 +121,7 @@
     <value>Выбрать</value>
   </data>
   <data name="ColumnParameter" xml:space="preserve">
-    <value>Параметр подсчёта объёма колон (пример: длина или ширина)</value>
+    <value>Параметр подсчёта объёма колон (длина или ширина)</value>
   </data>
   <data name="DoorTypes" xml:space="preserve">
     <value>Типоразмер входных дверей</value>
@@ -157,7 +157,7 @@
     <value>Значение параметра фильтрации комнат</value>
   </data>
   <data name="RotatePlans" xml:space="preserve">
-    <value>Поворот квартир (высокое потребление ОЗУ)</value>
+    <value>Поворот планов(высокое потребление ОЗУ)</value>
   </data>
   <data name="SaveSettings" xml:space="preserve">
     <value>Сохранить</value>
@@ -200,5 +200,27 @@
   </data>
   <data name="WallTypes" xml:space="preserve">
     <value>Типоразмер внутренних стен квартиры</value>
+  </data>
+  <data name="AutoFacade" xml:space="preserve">
+    <value>Автоматически просчитать объём фасада</value>
+  </data>
+  <data name="AutoСolumns" xml:space="preserve">
+    <value>Автоматически просчитать объём колонн</value>
+  </data>
+  <data name="ChooseFacades" xml:space="preserve">
+    <value>Выбрать связь фасада</value>
+    <comment>Выбрать связь фасада</comment>
+  </data>
+  <data name="OffsetLink" xml:space="preserve">
+    <value>Отступ изображения от границ svg в px</value>
+  </data>
+  <data name="OffsetLinkAdvance" xml:space="preserve">
+    <value>Длина большей стороны в px</value>
+  </data>
+  <data name="СuttingBound" xml:space="preserve">
+    <value>Обрезать лишние границы </value>
+  </data>
+  <data name="ColorFill" xml:space="preserve">
+    <value>Цвет заливки квартиры на плане</value>
   </data>
 </root>

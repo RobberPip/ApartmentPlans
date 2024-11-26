@@ -8,10 +8,11 @@
         xmlns:auxiliary="clr-namespace:ApartmentPlans.AuxiliaryСlasses"
         mc:Ignorable="d"
         Title="Плагин &quot;Планы квартир&quot; модуль экспорта листов" 
-        Height="545" Width="680" Background="#FFE6E6E6">
+        Height="545" Width="720" Background="#FFE6E6E6">
     <Window.Resources>
         <auxiliary:ColumnWidthToComboBoxWidthConverter x:Key="ColumnWidthToComboBoxWidthConverter"/>
         <auxiliary:WidthConverter x:Key="WidthConverter" />
+        <auxiliary:StringToIntConverter x:Key="StringToIntConverter" />
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -19,20 +20,23 @@
             <RowDefinition Height="35"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="325*"/>
-            <ColumnDefinition Width="325*"/>
+            <ColumnDefinition Width="340*"/>
+            <ColumnDefinition Width="380*"/>
         </Grid.ColumnDefinitions>
-
+        <CheckBox Content="Выделить всё" HorizontalAlignment="Left" Margin="5,10,0,0" Grid.Row="1" VerticalAlignment="Top" Unchecked="CheckBox_UnChecked" Checked="CheckBox_Checked"/>
+        <Label Content="{Binding SelectedItemsCount}" 
+               ContentStringFormat="Выбрано элементов: {0}" Margin="172,5,10,6" Grid.Row="1"/>
         <TextBox Margin="5,4,0,0" TextWrapping="Wrap" 
                  VerticalAlignment="Top" 
                  Text="{x:Static res:FileResources.Search}"
                  GotFocus="TextBox_GotFocus" 
                  LostFocus="TextBox_LostFocus" TextChanged="TextBoxSearchViews_TextChanged"/>
         <ListView ItemsSource="{Binding ViewsSheet}" 
-                  Grid.Column="0" Margin="5,25,0,0" Grid.Row="0">
+                  Grid.Column="0" Margin="5,25,0,0" Grid.Row="0"
+                  SelectionChanged="ListView_SelectionChanged">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Width="303">
+                    <GridViewColumn Width="318">
                         <GridViewColumn.Header>
                             <Grid>
 
@@ -74,6 +78,7 @@
                             <Grid>
                                 <ComboBox Margin="174,50,20,0" Height="22" VerticalAlignment="Top"
                             IsEditable="True"
+                                          PreviewMouseDown="ComboBox_PreviewMouseDown"
                             IsTextSearchEnabled="False" 
                             StaysOpenOnEdit="True"
                             ItemsSource="{Binding FilteredNameProjectParameters.View}"
@@ -111,20 +116,19 @@
                             VerticalAlignment="Top"
                             Text="{x:Static res:FileResources.NameFloor}" HorizontalAlignment="Left" Width="137"/>
                                 <TextBlock x:Name="pathToSave"
-                        
-                        Text="{x:Static res:FileResources.PathToSave}" 
-                        Margin="10,201,0,0" 
-                        TextWrapping="Wrap" 
-                        Height="16" 
-                        VerticalAlignment="Top" HorizontalAlignment="Left" Width="161"/>
-                                <TextBlock x:Name="path"
-                        Text="{Binding PathToSave}" 
-                        Margin="10,235,22,0" 
-                        TextWrapping="Wrap" 
-                        Height="44" 
-                        VerticalAlignment="Top"/>
+                                Text="{x:Static res:FileResources.PathToSave}" 
+                                Margin="10,201,0,0" 
+                                TextWrapping="Wrap" 
+                                Height="16" 
+                                VerticalAlignment="Top" HorizontalAlignment="Left" Width="161"/>
+                                <TextBlock x:Name="Path"
+                                Text="{Binding PathToSave}" 
+                                Margin="10,230,0,187" 
+                                Height="Auto"
+                                TextWrapping="Wrap" HorizontalAlignment="Left" Width="343"/>
                                 <ComboBox Margin="174,86,20,0" Height="22" VerticalAlignment="Top"
                             IsEditable="True"
+                                          PreviewMouseDown="ComboBox_PreviewMouseDown"
                             IsTextSearchEnabled="False" 
                             StaysOpenOnEdit="True"
                             ItemsSource="{Binding FilteredNamesCaseParameters.View}"
@@ -136,6 +140,7 @@
                                           MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource WidthConverter}}"/>
                                 <ComboBox Margin="174,123,20,0" Height="22" VerticalAlignment="Top"
                             IsEditable="True"
+                                          PreviewMouseDown="ComboBox_PreviewMouseDown"
                             IsTextSearchEnabled="False" 
                             StaysOpenOnEdit="True"
                             DisplayMemberPath="Name"
@@ -148,6 +153,7 @@
                                 <ComboBox Margin="174,162,20,0" Height="22" VerticalAlignment="Top"
                             IsEditable="True"
                             IsTextSearchEnabled="False" 
+                                          PreviewMouseDown="ComboBox_PreviewMouseDown"
                             StaysOpenOnEdit="True"
                             ItemsSource="{Binding FilteredNamesFloorParameters.View}"
                             DisplayMemberPath="Name"
@@ -161,22 +167,23 @@
                                 Margin="174,198,20,0" 
                                 VerticalAlignment="Top"
                                 Command="{Binding СhoosePathToSaveCommand}"/>
-                                <ListView ItemsSource="{Binding ItemsSchedule}" Margin="10,279,10,15">
+                                <ListView ItemsSource="{Binding ItemsSchedule}" Margin="10,358,10,15">
                                     <ListView.View>
                                         <GridView>
-                                            <GridViewColumn Header="Колонка" Width="120">
+                                            <GridViewColumn Header="Колонка" Width="153">
                                                 <GridViewColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding Name}"/>
                                                     </DataTemplate>
                                                 </GridViewColumn.CellTemplate>
                                             </GridViewColumn>
-                                            <GridViewColumn Header="Параметр" Width="160" x:Name="ParameterColumn">
+                                            <GridViewColumn Header="Параметр" Width="165" x:Name="ParameterColumn">
                                                 <GridViewColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <ComboBox
                             Width="{Binding ElementName=ParameterColumn, Path=ActualWidth, Converter={StaticResource ColumnWidthToComboBoxWidthConverter}, ConverterParameter=13}"
                             IsEditable="True"
+                                                            PreviewMouseDown="ComboBox_PreviewMouseDown"
                             IsTextSearchEnabled="False"
                             StaysOpenOnEdit="True"
                             ItemsSource="{Binding FilteredObjectParameters.View}"
@@ -191,13 +198,51 @@
                                         </GridView>
                                     </ListView.View>
                                 </ListView>
+                                <TextBlock x:Name="OffsetLink"
+                                 Text="{x:Static res:FileResources.OffsetLink}" 
+                                 Margin="10,279,0,0" 
+                                 TextWrapping="Wrap" 
+                                 Height="16" 
+                                 VerticalAlignment="Top" HorizontalAlignment="Left" Width="237"/>
+                                 <TextBox
+                                 Text="{Binding OffsetLink, 
+                                 Converter={StaticResource StringToIntConverter}, 
+                                 UpdateSourceTrigger=PropertyChanged}" 
+                                 HorizontalContentAlignment="Left" 
+                                 VerticalContentAlignment="Center" 
+                                 VerticalAlignment="Top" 
+                                 Margin="247,276,21,0" 
+                                 TextWrapping="NoWrap" Height="21"
+                                 PreviewTextInput="TextBoxOffset_PreviewTextInput"
+                                 PreviewKeyDown="TextBoxOffset_PreviewKeyDown"/>
+                                <TextBlock
+    Text="{x:Static res:FileResources.OffsetLinkAdvance}" 
+    Margin="10,308,0,0" 
+    TextWrapping="Wrap" 
+    Height="17" 
+    VerticalAlignment="Top" HorizontalAlignment="Left" Width="237"/>
+                                <TextBox
+    Text="{Binding OffsetLinkAdvance, Converter={StaticResource StringToIntConverter}, UpdateSourceTrigger=PropertyChanged}" 
+    HorizontalContentAlignment="Left" 
+    VerticalContentAlignment="Center" 
+    VerticalAlignment="Top" 
+    Margin="247,308,21,0" 
+    TextWrapping="NoWrap" Height="21"
+    PreviewTextInput="TextBoxOffset_PreviewTextInput"
+    PreviewKeyDown="TextBoxOffset_PreviewKeyDown"/>
                                 <TextBlock x:Name="nameProject_Копировать"
                         
                     Margin="110,19,63,0" 
                     TextWrapping="Wrap" 
                     Height="16" 
-                    VerticalAlignment="Top"><Run Language="ru-ru" Text="Настройка выгрузки"/></TextBlock>
-
+                    VerticalAlignment="Top" Text="Настройка выгрузки"/>
+                                <CheckBox IsChecked="{Binding IsСuttingBound}" Margin="0,338,21,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="16"/>
+                                <TextBlock 
+    Text="{x:Static res:FileResources.СuttingBound}" 
+    Margin="10,337,0,0" 
+    TextWrapping="Wrap" 
+    Height="17" 
+    VerticalAlignment="Top" HorizontalAlignment="Left" Width="237"/>
                             </Grid>
                         </Grid>
                     </Grid>

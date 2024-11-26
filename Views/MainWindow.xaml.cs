@@ -5,6 +5,7 @@ using Autodesk.Revit.UI;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -23,13 +24,21 @@ namespace ApartmentPlans
 
         public MainWindow(UIApplication application)
         {
+            var executingAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var directory = System.IO.Path.GetDirectoryName(executingAssembly.Location);
+            var dllPath = System.IO.Path.Combine(directory, "ColorPicker.dll");
+            var dllPath1 = System.IO.Path.Combine(directory, "Microsoft.Xaml.Behaviors.dll");
+            Assembly.LoadFrom(dllPath);
+            Assembly.LoadFrom(dllPath1);
             InitializeComponent();
             mainVM = new MainVm(application);
             DataContext = mainVM;
-            mainVM.LabelDoorCountText = mainVM.LabelWallCountText =mainVM.LabelWallFacadesCountText ="Выбрано: 0";
+            mainVM.LabelDoorCountText = mainVM.LabelWallCountText = mainVM.LabelWallFacadesCountText = mainVM.LabelLinkCountText = "Выбрано: 0";
 
 
         }
+
+
         private void ComboBox_GotFocus(object sender, RoutedEventArgs e)
         {
             var comboBox = sender as ComboBox;
@@ -59,7 +68,7 @@ namespace ApartmentPlans
         {
             var comboBox = sender as ComboBox;
             var text = comboBox.Text;
-            if (!mainVM.SortParameters.Select(q => q.Name).Contains(text))
+            if (!mainVM.ItemsSchedule.Any(q => q.ObjectParameters.Any(w => w.Name == text)))
             {
                 comboBox.Text = string.Empty;
             }
@@ -67,6 +76,8 @@ namespace ApartmentPlans
         private void SortParameterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var comboBox = sender as ComboBox;
+                 
+      
             if (comboBox.SelectedItem != null && comboBox.SelectedItem is SelectableParameterModel selectedParameter)
             {
                 mainVM.UpdateValidValuesSortParameters(selectedParameter.parameter.Definition.Name);
@@ -144,6 +155,15 @@ namespace ApartmentPlans
                 e.Handled = true;
             }
         }
+        private void LabelLinkFacdeCount_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (linkFacadesComboBox != null)
+            {
+                linkFacadesComboBox.IsDropDownOpen = true;
+                linkFacadesComboBox.Focus();
+                e.Handled = true;
+            }
+        }
         private void LabelWallCount_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (wallTypeComboBox != null)
@@ -176,8 +196,12 @@ namespace ApartmentPlans
         {
             mainVM.LabelWallFacadesCountText = "Выбарно: " + mainVM.WallFacadesTypes.Count(q => q.IsSelected == true).ToString();
         }
+        private void CheckBoxLinkFacades_Checked(object sender, EventArgs e)
+        {
+            mainVM.LabelLinkCountText = "Выбарно: " + mainVM.FilesFacde.Count(q => q.IsSelected == true).ToString();
+        }
 
-        private void TextBoxSearchViews_TextChanged(object sender, TextChangedEventArgs e)
+        private void TextBoxSearchViews_TextChanged(object sender, TextChangedEventArgs e) 
         {
             TextBox textBox = (TextBox)sender;
             if (textBox.Text.Length > 0 && textBox.Text != FileResources.Search)
@@ -222,7 +246,38 @@ namespace ApartmentPlans
             textBlock = FindName("Path") as TextBlock;
             textBlock.Foreground = foregroundColor;
 
+            textBlock = FindName("OffsetLink") as TextBlock;
+            textBlock.Foreground = foregroundColor;
+
+            textBlock = FindName("OffsetLinkAdvance") as TextBlock;
+            textBlock.Foreground = foregroundColor;
+
+            textBlock = FindName("СuttingBound") as TextBlock;
+            textBlock.Foreground = foregroundColor;
+
         }
+        private void TextBoxOffset_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (e.Text == "-")
+            {
+                // Блокируем минус, если он не первый символ или уже есть в тексте
+                e.Handled = ((sender as TextBox).Text.Contains("-") || (sender as TextBox).CaretIndex != 0);
+            }
+            else
+            {
+                // Блокируем всё, кроме цифр
+                e.Handled = !int.TryParse(e.Text, out _);
+            }
+        }
+        private void TextBoxOffset_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Блокируем нажатие клавиши пробела
+            if (e.Key == Key.Space)
+            {
+                e.Handled = true;
+            }
+        }
+
         private void NamesCaseParameterComboBox_LostFocus(object sender, RoutedEventArgs e) 
         {
             var comboBox = sender as ComboBox;
@@ -287,6 +342,77 @@ namespace ApartmentPlans
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            for (int i = 0; i < e.AddedItems.Count; i++)
+            {
+                
+                var view = e.AddedItems[i] as WorkViewModel;
+                if (view != null)
+                {
+                    // Переключаем IsSelected
+                    view.IsSelected = !view.IsSelected;
+                }
+            }
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            foreach (var view in mainVM.Views)
+            {
+                view.IsSelected = true;
+            }
+        }
+        private void CheckBox_UnChecked(object sender, RoutedEventArgs e)
+        {
+            foreach (var view in mainVM.Views)
+            {
+                view.IsSelected = false;
+            }
+        }
+        private void CheckBoxAutoСolumns_Checked(object sender, RoutedEventArgs e)
+        {
+            CheckBox checkBox = (CheckBox)sender;
+            Brush foregroundColor = checkBox.IsChecked == true ? Brushes.LightGray : Brushes.Black;
+
+            TextBlock textBlock;
+            ComboBox comboBox;
+
+            textBlock = FindName("Columns") as TextBlock;
+            textBlock.Foreground = foregroundColor;
+
+            comboBox = FindName("ColumnsPar") as ComboBox;
+            comboBox.IsEnabled = (bool)!checkBox.IsChecked;
+        }
+        private void CheckBoxAutoFacades_Checked(object sender, RoutedEventArgs e)
+        {
+            CheckBox checkBox = (CheckBox)sender;
+            Brush foregroundColor = checkBox.IsChecked == true ? Brushes.LightGray : Brushes.Black;
+
+            TextBlock textBlock;
+            ComboBox comboBox;
+            Label label;
+            TextBox text;
+
+            textBlock = FindName("FacedesKeyText") as TextBlock;
+            textBlock.Foreground = foregroundColor;
+            textBlock = FindName("FacedesValText") as TextBlock;
+            textBlock.Foreground = foregroundColor;
+
+            comboBox = FindName("wallFacadesTypeComboBox") as ComboBox;
+            comboBox.IsEnabled = (bool)!checkBox.IsChecked;
+            text = FindName("FacedesVal") as TextBox;
+            text.IsEnabled = (bool)!checkBox.IsChecked;
+
+            label = FindName("Counter") as Label;
+            label.Foreground = foregroundColor;
+        }
+        private void ComboBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var comboBox = sender as ComboBox;
+            comboBox.SelectedIndex = -1; 
         }
     }
 }

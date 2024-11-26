@@ -5,14 +5,29 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Data;
+using System.Windows.Media;
 using System.Windows.Input;
 
 namespace ApartmentPlans.ViewModels
 {
     public partial class MainVm
     {
+        public bool _autoСolumns  = true;
+        public bool _autoFacade = true;
+        public bool AutoFacade
+        {
+            get => _autoFacade;
+            set => SetProperty(ref _autoFacade, value);
+        }
+        public bool AutoСolumns
+        {
+            get => _autoСolumns;
+            set => SetProperty(ref _autoСolumns, value);
+        }
         private bool _isExport;
+        private bool _isСuttingBound;
         private bool _isRotatePlans;
+        private bool _isRotateFloors;
         private string _wallFacadesOffest;
         private string _pathToSave = "Путь: по умолачнию";
         private string _filterSortText;
@@ -56,9 +71,39 @@ namespace ApartmentPlans.ViewModels
         private RelayCommand _uploadSettignsCommand;
         private int _selectedItemsCount;
         private string _labelDoorCountText;
+        private string _labelLinkCountText;
         private string _labelWallCountText;
         private string _labelWallFacadesCountText;
+        public int _offsetLink;
+        public int _offsetLinkAdvance = 700;
+        private System.Windows.Media.Color _selectedColor = System.Windows.Media.Color.FromRgb(249, 209, 210);
 
+        public System.Windows.Media.Color SelectedColor
+        {
+            get => _selectedColor;
+            set => SetProperty(ref _selectedColor, value);
+        }
+
+        public bool IsСuttingBound
+        {
+            get => _isСuttingBound;
+            set => SetProperty(ref _isСuttingBound, value);
+        }
+        public int OffsetLinkAdvance
+        {
+            get => _offsetLinkAdvance;
+            set => SetProperty(ref _offsetLinkAdvance, value);
+        }
+        public int OffsetLink
+        {
+            get => _offsetLink;
+            set => SetProperty(ref _offsetLink, value);
+        }
+        public bool IsRotateFloors
+        {
+            get => _isRotateFloors;
+            set => SetProperty(ref _isRotateFloors, value);
+        }
         public bool IsRotatePlans
         {
             get => _isRotatePlans;
@@ -69,6 +114,7 @@ namespace ApartmentPlans.ViewModels
             get => _isExport;
             set => SetProperty(ref _isExport, value);
         }
+
         public string PathToSave
         {
             get => _pathToSave;
@@ -78,6 +124,11 @@ namespace ApartmentPlans.ViewModels
         {
             get => _labelDoorCountText;
             set => SetProperty(ref _labelDoorCountText, value);
+        }
+        public string LabelLinkCountText
+        {
+            get => _labelLinkCountText;
+            set => SetProperty(ref _labelLinkCountText, value);
         }
         public string LabelWallCountText
         {
@@ -113,6 +164,7 @@ namespace ApartmentPlans.ViewModels
         public ObservableCollection<SelectableParameterModel> NumApartParameters { get; set; } = new ObservableCollection<SelectableParameterModel>();
         public ObservableCollection<SelectableFamilyModel> DoorTypes { get; set; } = new ObservableCollection<SelectableFamilyModel>();
         public ObservableCollection<SelectableFamilyModel> WallTypes { get; set; } = new ObservableCollection<SelectableFamilyModel>();
+        public ObservableCollection<SelectableFamilyModel> FilesFacde { get; set; } = new ObservableCollection<SelectableFamilyModel>();
         public ObservableCollection<SelectableFamilyModel> WallFacadesTypes { get; set; } = new ObservableCollection<SelectableFamilyModel>();
         public ObservableCollection<SelectableFamilyModel> TypesSquare { get; set; } = new ObservableCollection<SelectableFamilyModel>();
         public ObservableCollection<MultiSelectModel> TemplateList { get; set; }
@@ -121,6 +173,7 @@ namespace ApartmentPlans.ViewModels
         public ObservableCollection<View> TypesLegend { get; set; } = new ObservableCollection<View>();
         public ObservableCollection<string> ValueSortParameters { get; set; } = new ObservableCollection<string>();
         public ObservableCollection<Parameter> СolumnParameters { get; set; } = new ObservableCollection<Parameter>();
+        
 
         public string FilterNamesCaseText
         {
